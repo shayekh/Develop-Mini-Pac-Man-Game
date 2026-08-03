@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAC-MAN Retro Arcade Edition</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header>
+    <h1 class="game-title">PAC-MAN</h1>
+  </header>
+
+  <main class="arcade-cabinet">
+    <!-- Screen Bezel Container -->
+    <div class="screen-bezel">
+      <!-- CRT scanline visual overlay wraps the Canvas -->
+      <div class="crt-screen">
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Menu overlay inside the screen coordinate space -->
+        <div id="menu-overlay" class="overlay">
+          <div class="menu-card">
+            <h2>PAC-MAN ARCADE</h2>
+            <p>Welcome, Player! Select your options on the sidebar controls panel and click below to play.</p>
+            <button id="start-game-btn" class="arcade-btn">INSERT COIN</button>
+          </div>
+        </div>
+
+        <!-- Pause Overlay inside the screen coordinate space -->
+        <div id="pause-overlay" class="overlay" style="display: none;">
+          <div class="menu-card pause-card">
+            <h2>GAME PAUSED</h2>
+            <p>Press SPACE or click below to resume.</p>
+            <button id="resume-btn" class="arcade-btn">RESUME</button>
+            <button id="quit-btn" class="arcade-btn secondary-btn">QUIT</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HUD Control Panel Sidebar -->
+    <div class="hud-panel">
+      <!-- High Score section -->
+      <div class="hud-section">
+        <div class="hud-label">
+          <div class="pacman-life-icon" style="transform: rotate(0deg); width: 10px; height: 10px;"></div>
+          High Score
+        </div>
+        <div id="high-score-val" class="score-display">000000</div>
+      </div>
+
+      <!-- Live Score section -->
+      <div class="hud-section">
+        <div class="hud-label">Score</div>
+        <div id="score-val" class="score-display">000000</div>
+      </div>
+
+      <!-- Level & Lives section -->
+      <div class="hud-section">
+        <div class="hud-row" style="margin-bottom: 8px;">
+          <span class="hud-label">Level</span>
+          <span id="level-val" class="hud-value">1</span>
+        </div>
+        <div class="hud-row">
+          <span class="hud-label">Lives</span>
+          <div id="lives-icons" class="lives-container">
+            <!-- Programmatically populated life icons -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode Options config section -->
+      <div class="hud-section">
+        <div class="hud-label">Game Settings</div>
+        <div class="config-group">
+          <!-- Gravity Mode option -->
+          <div class="mode-toggle-wrapper">
+            <div class="mode-title-desc">
+              <span class="mode-name">Gravity Mode</span>
+              <span class="mode-desc">Downward physics pull</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="gravity-mode-chk">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Difficulty selection dropdown -->
+          <div class="select-wrapper">
+            <span class="mode-desc" style="margin-bottom: 2px;">GHOST SPEED</span>
+            <select id="difficulty-select" class="arcade-select">
+              <option value="Slow">SLOW (Easy)</option>
+              <option value="Medium" selected>MEDIUM (Normal)</option>
+              <option value="Hard">HARD (Expert)</option>
+            </select>
+          </div>
+
+          <!-- Audio button -->
+          <button id="mute-btn" class="mute-button">
+            <svg id="volume-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <span>SOUND ON</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Instruction / Key bindings cheatsheet -->
+      <div class="hud-section control-guide">
+        <span class="hud-label" style="font-size: 0.55rem;">Controls</span>
+        <table>
+          <tr>
+            <td>MOVE:</td>
+            <td>Arrows / WASD</td>
+          </tr>
+          <tr>
+            <td>PAUSE:</td>
+            <td>SPACE / ESC</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Controls Area (automatically displays on screens <= 768px wide) -->
+  <div class="mobile-dpad">
+    <div class="dpad-layout">
+      <button id="btn-up" class="dpad-btn">▲</button>
+      <button id="btn-down" class="dpad-btn">▼</button>
+      <button id="btn-left" class="dpad-btn">◀</button>
+      <button id="btn-right" class="dpad-btn">▶</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>Pac-Man Arcade Game engineered by <a href="#">Gemini Antigravity</a>. Reference: <a href="https://freepacman.org/" target="_blank">freepacman.org</a></p>
+  </footer>
+
+  <!-- Module entry point to run game -->
+  <script type="module">
+    import { gameController } from './js/game.js';
+    import { gameAudio } from './js/audio.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. Initialise core controller
+      gameController.init('game-canvas');
+      gameController.draw(); // Draw initial idle screen state
+
+      // 2. Start button event
+      const startBtn = document.getElementById('start-game-btn');
+      startBtn.addEventListener('click', () => {
+        gameController.startNewGame();
+        
+        // Start running loop
+        if (!window.gameLoopRunning) {
+          window.gameLoopRunning = true;
+          gameController.loop();
+        }
+      });
+
+      // 3. Pause Screen actions
+      document.getElementById('resume-btn').addEventListener('click', () => {
+        gameController.togglePause();
+      });
+
+      document.getElementById('quit-btn').addEventListener('click', () => {
+        gameController.state = 'START_MENU';
+        gameController.hidePauseOverlay();
+        gameController.showOverlayMenu();
+        gameAudio.stopSiren();
+      });
+
+      // 4. Bind configuration sidebar controls
+      const gravityChk = document.getElementById('gravity-mode-chk');
+      gravityChk.addEventListener('change', (e) => {
+        gameController.setGravityMode(e.target.checked);
+      });
+
+      const diffSelect = document.getElementById('difficulty-select');
+      diffSelect.addEventListener('change', (e) => {
+        gameController.setDifficulty(e.target.value);
+      });
+
+      // Mute/Unmute audio handler
+      const muteBtn = document.getElementById('mute-btn');
+      const volumeIcon = document.getElementById('volume-icon');
+      const volumeText = muteBtn.querySelector('span');
+
+      muteBtn.addEventListener('click', () => {
+        const isMuted = gameAudio.toggleMute();
+        muteBtn.classList.toggle('is-muted', isMuted);
+        
+        if (isMuted) {
+          volumeText.textContent = 'SOUND OFF';
+          volumeIcon.innerHTML = `
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          `;
+        } else {
+          volumeText.textContent = 'SOUND ON';
+          volumeIcon.innerHTML = `
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          `;
+        }
+      });
+
+      // Visual focus check - resume AudioContext on clicks
+      window.addEventListener('click', () => {
+        gameAudio.resume();
+      });
+    });
+  </script>
+</body>
+</html>
