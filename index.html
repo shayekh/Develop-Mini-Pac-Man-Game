@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mini Pac-Man</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-wrap">
+    <h1>PAC-MAN</h1>
+    <div id="hud">
+      <div>Score: <span id="score">0</span></div>
+      <div>Lives: <span id="lives">3</span></div>
+      <div>High: <span id="highscore">0</span></div>
+    </div>
+    <div id="canvas-container">
+      <canvas id="game" width="456" height="504"></canvas>
+      <div id="overlay">
+        <div id="overlay-text">PAC-MAN</div>
+        <div id="overlay-sub">Press ENTER or tap to start</div>
+      </div>
+    </div>
+    <div id="controls-hint">Arrow keys / WASD to move. On mobile, use the pad below.</div>
+    <div id="touch-pad">
+      <button id="btn-up" class="pad">▲</button>
+      <div class="pad-row">
+        <button id="btn-left" class="pad">◀</button>
+        <button id="btn-down" class="pad">▼</button>
+        <button id="btn-right" class="pad">▶</button>
+      </div>
+    </div>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>
